@@ -1,10 +1,29 @@
 var watchID;
 var accelerometerOptions = { frequency: 2000 };  // Update every 2 seconds
 accelerometerOptions.frequency = 3000; //changed my mind - now 3 seconds
-
+var dps = [];   //dataPoints. 
+var chart;
 
 //when the page is created...
 $(document).on("pagecreate", "#page1", function () {
+	
+		//setup chart
+    chart = new CanvasJS.Chart("chartContainer",{
+      	title :{
+      		text: "A random chart"
+      	},
+      	axisX: {						
+      		title: "Time"
+      	},
+      	axisY: {						
+      		title: "No."
+      	},
+      	data: [{
+      		type: "line",
+      		dataPoints : dps
+      	}]
+   	});
+	
 	
 	//setup listener for the toggle switch
 	$("#flipswitch").on("change", function() {
@@ -48,6 +67,8 @@ function accelerometerSuccess(acceleration) {
 	$('#sensorY').val(acceleration.y);
 	$('#sensorZ').val(acceleration.z);
 	$('#timestamp').val(acceleration.timestamp);
+	
+	updateChart(acceleration);
 
 }
 
@@ -62,5 +83,28 @@ function updateFreq(freq) {
 	//startSensor();
 }
 
+function updateChart(acceleration) {
+      	
+      	//set new random y values
+      	yVal = acceleration.x;
+		
+		//x value is time since start 
+		xVal = Date.now() - startTime;
+		//concert from milliseocnds to seconds (divide by a thousand)
+		xVal = xVal / 1000;
+      	
+		//add them to the data points to draw
+		dps.push({x: xVal,y: yVal});
+      	
+		//don't let the chart get too big 
+		//if there are more than 100 data points then start removing older data points
+      	if (dps.length >  100 )
+      	{
+      		dps.shift();				
+      	}
+
+		//redraw the chart
+      	chart.render();		
+	  }
 
 
